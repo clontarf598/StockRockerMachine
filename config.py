@@ -1,0 +1,1 @@
+# Konfiguration (Ticker, Parameter)
