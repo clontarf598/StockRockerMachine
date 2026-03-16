@@ -1,5 +1,5 @@
 yfinance
-'pandas
-numpy
-ta
-matplotlib'
+#pandas
+#numpy
+#ta
+#matplotlib'
