@@ -1,17 +1,8 @@
-import yfinance as yf
+from src.daily_stock_scanner import run_scanner
 
 def main():
-    
-    print("Starte TSLA Abruf …")
-    # Tesla-Ticker
-    ticker = yf.Ticker("TSLA")
-
-    # Hole die letzten 5 Tage im 1h-Intervall
-    df = ticker.history(period="5d", interval="1h")
-    
-    print("Zeilen:", len(df))   
-    print("--- Historische Daten von Tesla (TSLA) ---")
-    print(df.tail())
+    print("Starte täglichen Scanner …")
+    run_scanner()
 
 if __name__ == "__main__":
     main()
