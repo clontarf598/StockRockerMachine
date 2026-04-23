@@ -2,3 +2,8 @@
 src/__pycache__/stack_scanner.cpython-312.pyc
 .gitignore
 src/__pycache__/daily_stock_scanner.cpython-312.pyc
+tests/test_stack_scanner.py
+tests/__pycache__/test_stack_scanner.cpython-312-pytest-9.0.3.pyc
+tests/__pycache__/test_stack_scanner.cpython-312.pyc
+tests/__pycache__/__init__.cpython-312.pyc
+src/__pycache__/__init__.cpython-312.pyc
