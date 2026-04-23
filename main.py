@@ -1,4 +1,4 @@
-from src.daily_stock_scanner import run_scanner
+from src.stack_scanner import run_scanner
 
 def main():
     print("Starte täglichen Scanner …")

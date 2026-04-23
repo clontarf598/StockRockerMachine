@@ -1,2 +1,3 @@
 .venv
-src/__pycache__/daily_stock_scanner.cpython-312.pyc
+src/__pycache__/stack_scanner.cpython-312.pyc
+.gitignore
