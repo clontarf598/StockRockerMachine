@@ -14,24 +14,65 @@ TICKERS = [
 ]
 
 # This helper computes the 14-day RSI from a price series.
+#
+#    RSI is a momentum thermometer:
+#
+#       0–30 → market is cold (oversold) -- not automatic buy -- strong downtrend -- watch for reversal signs -- risk of catching a falling knife is higher 
+#       30–50 → warming up
+#       50–70 → hot (strong trend)
+#       70–100 → very hot (overbought) -- watch for weakness -- pullback becomes more likely -- risk of buying is higher
+#
+#    RSI Midline
+#       Above 50 → bullish momentum
+#       Below 50 → bearish momentum
+#
+#    You don’t blindly buy or sell based on RSI.
+#
 def calculate_rsi(data, period=14):
 
     # Computes day-to-day price changes.
+    # First change is NaN since there's no previous price to compare to, which is expected and handled by the rolling mean later.
     delta = data.diff()
 
     # The average positive change over the window.
+    # Delta postive --> keep the value. Delta negative or zero --> replace with 0. Gains are kept, losses are set to 0.
+    # period = 14 → 14-Day-Window.
+    # The moving average of all positive price changes over a given period. Here 14 days. 
+    # This smooths out the gains to get an average gain per day over the period.
+    # 
+    #   You need 14 values before the first rolling average can be computed.
+    #   Index 0–12 → fewer than 14 values → rolling mean = NaN
+    #   Index 13 → first time you have 14 values → rolling mean becomes valid
+    #   So the first real gain value appears at index 13.   
+    # 
     gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
 
     # The average negative change over the window.
+    # Delta negative --> keep the value. Delta positive or zero --> replace with 0. Gains are kept, losses are set to 0.
+    # period = 14 → 14-Day-Window.
+    # The moving average of all positive price changes over a given period. Here 14 days. 
+    # This smooths out the gains to get an average gain per day over the period.
+    # 
+    #   You need 14 values before the first rolling average can be computed.
+    #   Index 0–12 → fewer than 14 values → rolling mean = NaN
+    #   Index 13 → first time you have 14 values → rolling mean becomes valid
+    #   So the first real gain value appears at index 13.   
+    # 
+    # The loss is expressed as a positive number (the magnitude of the loss) for easier interpretation and calculation of RS.
     loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
 
+    # Relative Strength (RS) is the ratio of average gain to average loss. 
+    # It indicates how much the price has been rising compared to falling.
     rs = gain / loss
 
+    # Convert RS into RSI, which is a normalized value between 0 and 100.
     # Returns the RSI value, which ranges from 0 to 100. Higher values indicate stronger momentum.
     # Standard relative strength index for the closing prices.
     rsi = 100 - (100 / (1 + rs))
 
     return rsi
+
+
 
 # Downloads 6 months of daily price data for the given ticker, computes the 50-day SMA, 20-day volume MA, 
 # and RSI, and scores the stock based on momentum, volume spike, and RSI strength. Returns a dictionary with 

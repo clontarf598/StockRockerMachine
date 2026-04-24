@@ -12,6 +12,7 @@ class TestStackScanner(unittest.TestCase):
         data = pd.Series([100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114])
         rsi = calculate_rsi(data)
         # RSI should be 100 for consistently rising prices
+        # Take lastvalue of RSI, which should be 100 since all price changes are positive and the average loss is zero.
         self.assertAlmostEqual(rsi.iloc[-1], 100.0, places=1)
 
     @patch('src.stack_scanner.yf.download')
