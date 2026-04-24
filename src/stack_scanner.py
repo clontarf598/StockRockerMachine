@@ -74,6 +74,29 @@ def calculate_rsi(data, period=14):
 
 
 
+# Downloads 6 months of daily price data from Yahoo Finance for the given ticker.
+# Returns a DataFrame with OHLCV data, or None if download fails.
+def download_stock_data(ticker, period="6mo", interval="1d", progress=False):
+    """
+    Download historical stock data from Yahoo Finance.
+    
+    Args:
+        ticker (str): The stock ticker symbol (e.g., 'AAPL', 'TSLA')
+        period (str): The time period for historical data (default: '6mo')
+        interval (str): The data interval (default: '1d' for daily)
+        progress (bool): Whether to show download progress (default: False)
+        
+    Returns:
+        pd.DataFrame: DataFrame with OHLCV data, or None if download fails
+    """
+    try:
+        df = yf.download(ticker, period=period, interval=interval, progress=progress)
+        return df
+    except Exception as e:
+        print(f"Error downloading data for {ticker}: {e}")
+        return None
+
+
 # Downloads 6 months of daily price data for the given ticker, computes the 50-day SMA, 20-day volume MA, 
 # and RSI, and scores the stock based on momentum, volume spike, and RSI strength. Returns a dictionary with 
 # the analysis results.
@@ -81,9 +104,10 @@ def analyze_stock(ticker):
 
     try:
 
-        df = yf.download(ticker, period="6mo", interval="1d", progress=False)
+        # Download Apple Stock date for the last 6 months from yahoo finance.
+        df = download_stock_data(ticker=ticker, period="6mo", interval="1d", progress=False)
 
-        if len(df) < 50:
+        if df is None or len(df) < 50:
 
             return None
 

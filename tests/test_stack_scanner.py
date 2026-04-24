@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import patch, MagicMock
 import pandas as pd
 import numpy as np
-from src.stack_scanner import calculate_rsi, analyze_stock, run_scanner, TICKERS
+from src.stack_scanner import calculate_rsi, analyze_stock, run_scanner, download_stock_data, TICKERS
 
 
 class TestStackScanner(unittest.TestCase):
@@ -15,7 +15,36 @@ class TestStackScanner(unittest.TestCase):
         # Take lastvalue of RSI, which should be 100 since all price changes are positive and the average loss is zero.
         self.assertAlmostEqual(rsi.iloc[-1], 100.0, places=1)
 
+    # Test cases for download_stock_data and analyze_stock would 
+    # require mocking yfinance and pandas behavior, which is done in the following tests.
+    # Replaces results from yfinance with controlled data (mockdata) to test the logic of download_stock_data 
+    # and analyze_stock without relying on actual network calls or data.
+    @patch('src.stack_scanner.yf.download') 
+    def test_download_stock_data_success_mock(self, mock_download):
+        # Mock successful data download
+        mock_data = pd.DataFrame({'Close': [100] * 60, 'Volume': [1000000] * 60})
+        mock_download.return_value = mock_data
+
+        result = download_stock_data(ticker='AAPL', period='6mo', interval='1d', progress=False)
+        self.assertIsNotNone(result)
+        self.assertEqual(len(result), 60)
+
+    # This test actually calls the real yfinance API, which may not be ideal for unit testing due to network dependency and potential rate limits.
+    def test_download_stock_data_real_api(self):
+        df = download_stock_data(ticker='AAPL', period='6mo', interval='1d', progress=False)
+        self.assertIsNotNone(df)
+        self.assertGreater(len(df), 0)
+        self.assertIn('Close', df.columns)
+
     @patch('src.stack_scanner.yf.download')
+    def test_download_stock_data_exception(self, mock_download):
+        # Mock exception during download
+        mock_download.side_effect = Exception("Download failed")
+
+        result = download_stock_data(ticker='AAPL', period='6mo', interval='1d', progress=False)
+        self.assertIsNone(result)
+
+    @patch('src.stack_scanner.download_stock_data')
     def test_analyze_stock_success(self, mock_download):
         # Mock successful data download with conditions met
         closes = [100] * 50 + [102] * 10 + [110]  # SMA50 ~100, last > SMA50
@@ -26,12 +55,14 @@ class TestStackScanner(unittest.TestCase):
         })
         mock_download.return_value = mock_data
 
+        # Read data from yahoo finance.
         result = analyze_stock('AAPL')
+        
         self.assertIsNotNone(result)
         self.assertEqual(result['ticker'], 'AAPL')
         self.assertGreaterEqual(result['score'], 2)  # At least momentum and volume
 
-    @patch('src.stack_scanner.yf.download')
+    @patch('src.stack_scanner.download_stock_data')
     def test_analyze_stock_insufficient_data(self, mock_download):
         # Mock insufficient data
         mock_data = pd.DataFrame({'Close': [100] * 40, 'Volume': [1000000] * 40})
@@ -40,10 +71,10 @@ class TestStackScanner(unittest.TestCase):
         result = analyze_stock('AAPL')
         self.assertIsNone(result)
 
-    @patch('src.stack_scanner.yf.download')
-    def test_analyze_stock_exception(self, mock_download):
-        # Mock exception during download
-        mock_download.side_effect = Exception("Download failed")
+    @patch('src.stack_scanner.download_stock_data')
+    def test_analyze_stock_download_fails(self, mock_download):
+        # Mock None returned from download
+        mock_download.return_value = None
 
         result = analyze_stock('AAPL')
         self.assertIsNone(result)
