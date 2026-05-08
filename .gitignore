@@ -4,3 +4,4 @@ src/__pycache__/stack_scanner.cpython-314.pyc
 src/__pycache__/__init__.cpython-314.pyc
 .venv
 .vsccode
+tests/__pycache__/test_stack_scanner.cpython-314.pyc
